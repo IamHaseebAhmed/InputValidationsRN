@@ -1,63 +1,47 @@
 import React from 'react';
-import {
-  TextInput,
-  Text,
-  View,
-  Dimensions,
-  TouchableOpacity,
-} from 'react-native';
-import {Formik} from 'formik';
-const {width} = Dimensions.get('screen');
+import {Text, TextInput, StyleSheet} from 'react-native';
 
-export const InputField = ({
-  initialValues,
-  validationSchema,
-  inputPlaceHolders,
-  onPressSubmit,
-}) => (
-  <Formik
-    initialValues={initialValues}
-    validationSchema={validationSchema}
-    onSubmit={values => onPressSubmit(values)}>
-    {({handleChange, handleBlur, handleSubmit, values, errors}) => (
-      <View>
-        {Object.keys(initialValues).map((field, index) => {
-          return (
-            <View key={index} style={{marginBottom: 20}}>
-              <Text style={{fontSize: 14, color: 'gray', marginBottom: 10}}>
-                {field.toUpperCase()}
-              </Text>
-              <TextInput
-                onChangeText={handleChange(field)}
-                onBlur={handleBlur(field)}
-                value={values[field]}
-                style={{
-                  backgroundColor: '#fff',
-                  paddingVertical: 10,
-                  width: width * 0.8,
-                  borderRadius: 10,
-                  borderWidth: 1,
-                  borderColor: '#e1e1e1',
-                  paddingHorizontal: 15,
-                }}
-                placeholder={inputPlaceHolders[field]}
-              />
-              <Text style={{color: 'red'}}>{errors[field]}</Text>
-            </View>
-          );
-        })}
-        <TouchableOpacity
-          onPress={handleSubmit}
-          style={{
-            width: width * 0.8,
-            backgroundColor: 'purple',
-            alignItems: 'center',
-            paddingVertical: 20,
-            borderRadius: 6,
-          }}>
-          <Text style={{color: '#fff', fontSize: 18}}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    )}
-  </Formik>
-);
+export const CustomInput = props => {
+  const {
+    field: {name, onBlur, onChange, value},
+    form: {errors, touched, setFieldTouched},
+    ...inputProps
+  } = props;
+
+  const hasError = errors[name] && touched[name];
+
+  return (
+    <>
+      <TextInput
+        style={[styles.textInput, hasError && styles.errorInput]}
+        value={value}
+        onChangeText={text => onChange(name)(text)}
+        onBlur={() => {
+          // setFieldTouched(name);
+          onBlur(name);
+        }}
+        {...inputProps}
+      />
+      {hasError && <Text style={styles.errorText}>{errors[name]}</Text>}
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  textInput: {
+    height: 40,
+    width: '100%',
+    margin: 10,
+    backgroundColor: 'white',
+    borderColor: 'gray',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 10,
+  },
+  errorText: {
+    fontSize: 10,
+    color: 'red',
+  },
+  errorInput: {
+    borderColor: 'red',
+  },
+});

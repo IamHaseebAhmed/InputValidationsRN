@@ -1,44 +1,126 @@
-import React, {useState} from 'react';
-import {View, StyleSheet} from 'react-native';
-import {InputField} from './components/InputField';
-import {SignUpFormValidations} from './components/InputField/validations';
+// SignUp.js
+import React from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  StatusBar,
+  TextInput,
+  Button,
+} from 'react-native';
+import {Formik, Field} from 'formik';
+import {CustomInput} from './components/InputField';
+import * as yup from 'yup';
 
-const App = () => {
-  const [signUpForm, setSignUpForm] = useState({
-    email: '',
-    password: '',
-    'confirm password': '',
-  });
+const signUpValidationSchema = yup.object().shape({
+  fullName: yup
+    .string()
+    .matches(/(\w.+\s).+/, 'Enter at least 2 names')
+    .required('Full name is required'),
+  phoneNumber: yup
+    .string()
+    .matches(/(01)(\d){8}\b/, 'Enter a valid phone number')
+    .required('Phone number is required'),
+  email: yup
+    .string()
+    .email('Please enter valid email')
+    .required('Email is required'),
+  password: yup
+    .string()
+    .matches(/\w*[a-z]\w*/, 'Password must have a small letter')
+    .matches(/\w*[A-Z]\w*/, 'Password must have a capital letter')
+    .matches(/\d/, 'Password must have a number')
+    .matches(
+      /[!@#$%^&*()\-_"=+{}; :,<.>]/,
+      'Password must have a special character',
+    )
+    .min(8, ({min}) => `Password must be at least ${min} characters`)
+    .required('Password is required'),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref('password')], 'Passwords do not match')
+    .required('Confirm password is required'),
+});
 
-  let inputPlaceHolders = {
-    email: 'Enter your name',
-    password: 'Enter your Password',
-    'confirm password': 'Enter your confirm password',
-  };
-
-  let onPressSubmit = data => {
-    console.log('Submitted Data: ', data);
-  };
-
+const SignUp = () => {
   return (
-    <View style={styles.container}>
-      <InputField
-        initialValues={signUpForm}
-        validationSchema={SignUpFormValidations}
-        inputPlaceHolders={inputPlaceHolders}
-        onPressSubmit={onPressSubmit}
-      />
-    </View>
+    <>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.signupContainer}>
+        <Text>Sign Up Screen</Text>
+
+        <Formik
+          initialValues={{
+            fullName: '',
+            email: '',
+            phoneNumber: '',
+            password: '',
+            confirmPassword: '',
+          }}
+          validationSchema={signUpValidationSchema}
+          onSubmit={values => console.log(values)}>
+          {({handleSubmit, isValid}) => (
+            <>
+              <Field
+                component={CustomInput}
+                name="fullName"
+                placeholder="Full Name"
+                placeholderTextColor="red"
+                selectionColor="red"
+                keyboardType="number-pad"
+              />
+              <Field
+                component={CustomInput}
+                name="email"
+                placeholder="Email Address"
+                keyboardType="email-address"
+              />
+              <Field
+                component={CustomInput}
+                name="phoneNumber"
+                placeholder="Phone Number"
+                keyboardType="numeric"
+              />
+              <Field
+                component={CustomInput}
+                name="password"
+                placeholder="Password"
+                secureTextEntry
+              />
+              <Field
+                component={CustomInput}
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                secureTextEntry
+              />
+
+              <Button
+                onPress={handleSubmit}
+                title="SIGN UP"
+                disabled={!isValid}
+              />
+            </>
+          )}
+        </Formik>
+      </View>
+    </>
   );
 };
-
-export default App;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: '#e1e1e1',
+  },
+  signupContainer: {
+    // width: '80%',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 10,
+    elevation: 10,
+    backgroundColor: '#e6e6e6',
   },
 });
+export default SignUp;
